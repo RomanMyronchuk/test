@@ -37,4 +37,4 @@ jobs:
           echo env: ${{ env.name }}
           echo "Secrets: ${{ toJSON(secrets) }}"
           echo "Variables: ${{ toJSON(vars) }}"
-          echo vars.MR_VALUE
+          echo ${{vars.AWS_REGION}}
