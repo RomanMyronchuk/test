@@ -36,4 +36,4 @@ jobs:
           echo Add other actions to build.
           echo env: ${{ env.name }}
           echo "Secrets: ${{ toJSON(secrets) }}"
-          echo "Secrets: ${{ toJSON(variables) }}"
+          echo "Secrets: ${{ toJSON(vars) }}"
