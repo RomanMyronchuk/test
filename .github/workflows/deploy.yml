@@ -1,18 +1,53 @@
-name: Dev Deploy Back-end API
+name: Deploy Back-end API - Dev
 
 on:
   workflow_dispatch:
   # push:
-  #     branches: [dev]        
-
+  #     branches: [dev]
+  #     paths-ignore: 
+  #     - '.github/workflows/*'
+  
 jobs:
   deploy:
     name: Dev Deploy
     runs-on: ubuntu-22.04
   
     env:
-      name: dev #???
-    
+      NAME: dev
+      AWS_REGION: eu-north-1
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
+      IMAGE: ${{ vars.IMAGE }}
+
     steps:
+      - name: Show variables
+        run: |
+          echo ${{ env.AWS_ACCESS_KEY_ID }}
+          echo ${{ env.AWS_SECRET_ACCESS_KEY }}
+          echo ${{ env.AWS_REGION }}
+          echo ${{ env.ECR_REGISTRY }}
+          echo ${{ env.IMAGE }}
+
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        run: |
+          aws ecr get-login-password --region ${{ env.AWS_REGION }} \
+          | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        run: |
+          docker build --no-cache --build-arg NODE_ENV="${{ env.NAME }}" -t ${{ env.IMAGE }}:${{ env.NAME }}-backend-latest . -f ./docker/Dockerfile
+          docker push ${{ env.IMAGE }}:${{ env.NAME }}-backend-latest
+
