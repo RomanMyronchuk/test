@@ -1,0 +1,17 @@
+name: Deploy - Dev Current
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: [current]
+  #     paths-ignore: 
+  #     - '.github/workflows/*'
+  
+jobs:
+  deploy:
+    name: Dev Deploy
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Run a one-line script
+        run: echo Hello, world!
