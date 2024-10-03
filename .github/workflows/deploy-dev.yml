@@ -19,6 +19,9 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
       IMAGE: ${{ vars.IMAGE }}
+      DEV_SERVER_HOST: ${{ vars.DEV_SERVER_HOST }}
+      DEV_SERVER_USERNAME: ${{ vars.DEV_SERVER_USERNAME }}
+      DEV_SERVER_EC2_KEY: ${{ secrets.DEV_SERVER_EC2_KEY }}
 
     steps:
       - name: Show variables
@@ -48,21 +51,21 @@ jobs:
           docker build --no-cache --build-arg NODE_ENV="${{ env.NAME }}" -t ${{ env.IMAGE }}:${{ env.NAME }}-backend-latest . -f ./docker/Dockerfile
           docker push ${{ env.IMAGE }}:${{ env.NAME }}-backend-latest
 
-      # - name: Deploy to dev EC2 instance
-      #   uses: appleboy/ssh-action@v0.1.7
-      #   with:
-      #     host: ${{ secrets.DEV_SERVER_HOST }}
-      #     username: ${{ secrets.DEV_SERVER_USERNAME }}
-      #     key: ${{ secrets.DEV_SERVER_EC2_KEY }}
-      #     port: 22
-      #     script: |
-      #       sudo su
-      #       cd /home/ubuntu/app
-      #       aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
-      #       docker-compose stop backend-service
-      #       docker-compose rm -f backend-service
-      #       docker rmi ${{ secrets.IMAGE }}:dev-backend-latest
-      #       docker pull ${{ secrets.IMAGE }}:dev-backend-latest
-      #       docker-compose up -d backend-service
+      - name: Deploy to dev EC2 instance
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ env.DEV_SERVER_HOST }}
+          username: ${{ env.DEV_SERVER_USERNAME }}
+          key: ${{ env.DEV_SERVER_EC2_KEY }}
+          port: 22
+          script: |
+            sudo su
+            cd /home/ubuntu/app
+            aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
+            docker-compose stop backend-service
+            docker-compose rm -f backend-service
+            docker rmi ${{ env.IMAGE }}:dev-backend-latest
+            docker pull ${{ env.IMAGE }}:dev-backend-latest
+            docker-compose up -d backend-service
 
 
