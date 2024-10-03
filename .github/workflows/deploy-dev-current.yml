@@ -1,0 +1,17 @@
+name: Deploy - Dev 2
+
+on:
+  workflow_dispatch:
+  # push:
+  #     branches: [dev]
+  #     paths-ignore: 
+  #     - '.github/workflows/*'
+  
+jobs:
+  deploy:
+    name: Dev Deploy
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
